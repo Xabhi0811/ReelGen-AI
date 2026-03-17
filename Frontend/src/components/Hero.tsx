@@ -10,20 +10,22 @@ export default function Hero() {
         'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=50&h=50&fit=crop'
     ];
 
-    const mainImageUrl = 'https://images.unsplash.com/photo-1576267423445-b2e0074d68a4?q=80&w=1600&auto=format&fit=crop';
+    const mainImageUrl = 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=1600&auto=format&fit=crop';
 
     const galleryStripImages = [
-        'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=100',
-        'https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=100',
-        'https://images.unsplash.com/photo-1553877522-43269d4ea984?q=80&w=100',
+        'https://images.unsplash.com/photo-1545239351-1141bd82e8a6?w=80&auto=format&fit=crop',
+
+   'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=80&auto=format&fit=crop',
+
+'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=80&auto=format&fit=crop'
     ];
 
     const trustedLogosText = [
-        'Startups',
-        'Scale-ups',
-        'Founders',
-        'Global teams',
-        'Creative brands'
+        'Adobe',
+        'Figma',
+        'Canva',
+        'Shopify',
+        'Webflow'
     ];
 
     return (
@@ -144,13 +146,13 @@ export default function Hero() {
                                     />
 
                                     <div className="absolute left-4 top-4 px-3 py-1 rounded-full bg-black/15 backdrop-blur-sm text-xs">
-                                        Branding • Web • Growth
+                                       Social-ready - 9:16 & 16:9
                                     </div>
 
                                     <div className="absolute right-4 bottom-4">
                                         <button className="inline-flex items-center gap-2 rounded-full px-4 py-2 bg-white/6 backdrop-blur-sm hover:bg-white/10 transition focus:outline-none">
                                             <PlayIcon className="size-4" />
-                                            <span className="text-xs">See case study</span>
+                                            <span className="text-xs">Preview</span>
                                         </button>
                                     </div>
                                 </div>
@@ -184,7 +186,7 @@ export default function Hero() {
 
                                         <span className="relative inline-flex size-2 rounded-full bg-green-600" />
                                     </div>
-                                    20+ completed projects
+                                    20+ more
                                 </motion.div>
                             </div>
                         </motion.div>
