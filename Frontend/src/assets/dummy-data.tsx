@@ -89,12 +89,12 @@ export const faqData = [
 
 export const footerLinks = [
     {
-        title: "Company",
+        title: "Ouick Links",
         links: [
             { name: "Home", url: "#" },
-            { name: "Services", url: "#" },
-            { name: "Work", url: "#" },
-            { name: "Contact", url: "#" }
+            { name: "Features", url: "#" },
+            { name: "Pricing", url: "#" },
+            { name: "FAQ", url: "#" }
         ]
     },
     {
@@ -107,9 +107,9 @@ export const footerLinks = [
     {
         title: "Connect",
         links: [
-            { name: "Twitter", url: "#" },
-            { name: "LinkedIn", url: "#" },
-            { name: "GitHub", url: "#" }
+            { name: "Twitter", url: "https://x.com/chabhichauhan" },
+            { name: "LinkedIn", url: "https://www.linkedin.com/in/abhishek-singh-chauhan-6a080627a" },
+            { name: "GitHub", url: "https://github.com/Xabhi0811/ReelGen-AI" }
         ]
     }
 ];
