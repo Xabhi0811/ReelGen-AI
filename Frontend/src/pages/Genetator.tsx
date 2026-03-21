@@ -44,8 +44,36 @@ const Genetator = () => {
              onChange={(e)=>handleFileChange(e, 'model')}/>
         </div>
         {/* lright col*/ }
-        <div className="">
-            <p>right col</p>
+        <div className="w-full">
+            <div className="mb-4">
+              <label htmlFor="Name" className="block text-sm mb-4">Project Name</label>
+              <input type="text" id="name" value={name} 
+              onChange={(e)=>setName(e.target.value)} placeholder="Name your project"
+              className="w-full bg-white/3 rounded-lg border-2 p-4 text-sm
+              border-violet-200/10 focus:border-violet-500/50 outline-none
+              transition-all"/>
+            </div>
+
+            <div className="mb-4 text-gray-300">
+              <label htmlFor="productName" className="block text-sm mb-4">Product Name</label>
+              <input type="text" id="productName" value={productName} 
+              onChange={(e)=>setProuctName(e.target.value)} placeholder="Enter the name of product"
+              className="w-full bg-white/3 rounded-lg border-2 p-4 text-sm
+              border-violet-200/10 focus:border-violet-500/50 outline-none
+              transition-all"/>
+            </div>
+
+             <div className="mb-4 text-gray-300">
+              <label htmlFor="productDescripation" className="block text-sm mb-4">
+                Product Descripation<span className="text-xs text-violet-400"> (optional) </span></label>
+              <textarea id="ProuctDescripation" rows={4}
+               value={productDescripation}
+              onChange={(e)=>setProuctDescripation(e.target.value)}
+              placeholder="Enter the description of the product" 
+              className="w-full bg-white/3 rounded-lg border-2 p-4
+              text-sm border-violet-200/10 focus:border-violet-500/50 outline-none
+              resize-none transition-all" />
+            </div>
         </div>
       </div>
       
