@@ -1,7 +1,8 @@
 import { useNavigate } from "react-router-dom"
 import type { Project } from "../types"
 import { useState } from "react";
-import { EllipsisIcon, ImageIcon, Loader2Icon, PlaySquareIcon, Share2Icon, Trash2Icon } from "lucide-react";
+import { EllipsisIcon, ImageIcon, Loader2Icon, PlaySquareIcon, Scroll, Share2Icon, Trash2Icon } from "lucide-react";
+import { GhostButton, PrimaryButton } from "./Buttons";
 
 
 const ProjectCard = ({gen, setGenerations, forCommunity = false}: 
@@ -170,7 +171,21 @@ const ProjectCard = ({gen, setGenerations, forCommunity = false}:
               </div>
   
              )}
+              
 
+               {/*button*/}
+               {!forCommunity &&(
+                <div className="mt-4 grid grid-cols-2 gap-3">
+                  <GhostButton className="text-xs justify-center"
+                  onClick={()=>{navigate(`/result/${gen.id}`); scrollTo(0,0)}}>
+                    View Details
+                  </GhostButton>
+                  <PrimaryButton onClick={()=>togglePublish(gen.id)}
+                    className="rounded-md">
+                   {gen.isPublished ? 'Unpublish':'Publish'}
+                  </PrimaryButton>
+                </div>
+               )}
 
           
           </div>
