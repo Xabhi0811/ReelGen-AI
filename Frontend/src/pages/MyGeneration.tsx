@@ -13,7 +13,7 @@ const MyGeneration = () => {
   
     const fetchMyGenerations =async ()=>{
       setTimeout(()=>{
-        setGenerations([]);
+        setGenerations(dummyGenerations );
         setLoading(false)
       },3000)
     }
@@ -48,7 +48,7 @@ const MyGeneration = () => {
             <p className="text-gray-400 mb-6">
             Start creating stunning product photos today
             </p>
-            <PrimaryButton onClick={()=>window.location.herf='/generate'}>
+            <PrimaryButton onClick={()=>window.location.href='/generate'}>
              Create New Generation
             </PrimaryButton>
           
