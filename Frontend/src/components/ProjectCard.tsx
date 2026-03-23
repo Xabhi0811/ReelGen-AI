@@ -64,7 +64,58 @@ const ProjectCard = ({gen, setGenerations, forCommunity = false}:
           </div>
         </div>
          {/*details */}
-         <div className=""></div>
+         <div className="p-4">
+           {/* product name date aspect ratior */}
+          <div className="flex items-start justify-between gap-4">
+           
+
+            <div className="flex-1">
+              <h3 className="font-medium text-lg mb-1">
+                {gen.productName}
+              </h3>
+              <p className="text-sm text-gray-500 mt-1">Created: {new Date(gen.createdAt).toLocaleString()}</p>
+              {gen.updatedAt && (
+                <p className="text-xs text-gray-500 mt-1">Updated: {new Date(gen.updatedAt).toLocaleString()}</p>
+              )}
+            </div>
+            <div className="text-right">
+              <div className="mt-2 flex flex-col items-end gap-1">
+                <span className="text-xs px-2 py-1 bg-white/5 rounded-full">
+                Aspect: {gen.aspectRatio}
+                </span>
+              </div>
+            </div>
+
+
+
+          </div>
+
+          {/* product descripation */}
+             
+             {gen.productDescription && (
+              <div className="mt-3">
+                <p className="text-xs text-gray-400 mb-1">
+                Description
+                </p>
+                <div className="text-sm text-gray-300 bg-white/3 p-2 rounded-md
+                wrap-break-word">{gen.productDescription}</div>
+              </div>
+  
+             )}
+
+             {/* user Prompt*/}
+
+             
+             {gen.userPrompt && (
+              <div className="mt-3">
+                <div className="text-xs text-gray-300">{gen.userPrompt}</div>
+              </div>
+  
+             )}
+
+
+          
+          </div>
       </div>
     </div>
   )
