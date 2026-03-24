@@ -5,9 +5,14 @@ import { motion } from 'framer-motion';
 
 import { Link } from 'react-router-dom';
 import { assets } from '../assets/assets';
+import { useClerk, useUser } from '@clerk/react';
 
 export default function Navbar() {
+
+    const {user} = useUser()
+    const {openSignIn, openSingUp} =useClerk()
     const [isOpen, setIsOpen] = useState(false);
+
 
     const navLinks = [
         { name: 'Home', href: '/#' },
@@ -36,11 +41,11 @@ export default function Navbar() {
                     ))}
                 </div>
 
-                <div className='hidden md:flex items-center gap-3'>
+                <div onClick={()=>openSignIn()} className='hidden md:flex items-center gap-3'>
                     <button className='text-sm font-medium text-gray-300 hover:text-white transition max-sm:hidden'>
                         Sign in
                     </button>
-                    <PrimaryButton className='max-sm:text-xs hidden sm:inline-block'>Get Started</PrimaryButton>
+                    <PrimaryButton onClick={()=>openSingUp()} className='max-sm:text-xs hidden sm:inline-block'>Get Started</PrimaryButton>
                 </div>
 
                 <button onClick={() => setIsOpen(!isOpen)} className='md:hidden'>
