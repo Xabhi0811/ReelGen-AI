@@ -18,6 +18,13 @@ const fetchProjectData = async()=>{
     setLoading(false)
   },3000)
 }
+const handleGenerateVideo = async ()=>{
+  setIsGenerating(true)
+}
+
+
+
+
 
 useEffect(()=>{
   fetchProjectData()
@@ -94,7 +101,7 @@ useEffect(()=>{
                 image into a dynamic video for social media.
               </p>
               {!project.generatedVideo ?(
-                <PrimaryButton>
+                <PrimaryButton onClick={handleGenerateVideo}>
                   <SparkleIcon className="size-4"/>Generate Video</PrimaryButton>
               ):(
                 <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-xl text-green-400
