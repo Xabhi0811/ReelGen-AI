@@ -1,4 +1,4 @@
-import { MenuIcon, SparkleIcon, XIcon } from 'lucide-react';
+import { DollarSignIcon, FolderEditIcon, GalleryHorizontalEnd, MenuIcon, SparkleIcon, XIcon } from 'lucide-react';
 import { GhostButton, PrimaryButton } from './Buttons';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
@@ -60,16 +60,30 @@ export default function Navbar() {
                                 <UserButton.MenuItems>
                                     <UserButton.Action label='Generate'labelIcon= 
                                     {<SparkleIcon size={14}/>} onClick={()=>navigate('/generate')}/>
-                                </UserButton.MenuItems>
+
+                                      
+
+                                      <UserButton.Action label='My Generate'labelIcon= 
+                                    {<FolderEditIcon size={14}/>} onClick={()=>navigate('/my-generations')}/>
+                                       
+                                    
+                                    <UserButton.Action label='Community'labelIcon= 
+                                    {<GalleryHorizontalEnd size={14}/>} onClick={()=>navigate('/community')}/>
+
+
+                                    <UserButton.Action label='plan'labelIcon= 
+                                    {<DollarSignIcon size={14}/>} onClick={()=>navigate('/plans')}/>
+                            
+                                    </UserButton.MenuItems>
                             </UserButton>
                         </div>
                       )}
                
-              
-
-                <button onClick={() => setIsOpen(!isOpen)} className='md:hidden'>
+                  {!user &&  <button onClick={() => setIsOpen(!isOpen)} className='md:hidden'>
                     <MenuIcon className='size-6' />
-                </button>
+                </button>}
+
+               
             </div>
             <div className={`flex flex-col items-center justify-center gap-6 text-lg font-medium fixed inset-0 bg-black/40 backdrop-blur-md z-50 transition-all duration-300 ${isOpen ? "translate-x-0" : "translate-x-full"}`}>
                 {navLinks.map((link) => (
