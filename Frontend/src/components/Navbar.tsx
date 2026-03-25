@@ -1,14 +1,15 @@
-import { MenuIcon, XIcon } from 'lucide-react';
-import { PrimaryButton } from './Buttons';
+import { MenuIcon, SparkleIcon, XIcon } from 'lucide-react';
+import { GhostButton, PrimaryButton } from './Buttons';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { assets } from '../assets/assets';
-import { useClerk, useUser } from '@clerk/react';
+import { useClerk, useUser, UserButton } from '@clerk/react';
 
 export default function Navbar() {
-
+    
+    const navigate = useNavigate()
     const {user} = useUser()
     const {openSignIn, openSingUp} =useClerk()
     const [isOpen, setIsOpen] = useState(false);
@@ -40,13 +41,31 @@ export default function Navbar() {
                         </Link>
                     ))}
                 </div>
-
-                <div onClick={()=>openSignIn()} className='hidden md:flex items-center gap-3'>
+                      
+                      
+                      {!user ?(
+                           <div onClick={()=>openSignIn()} className='hidden md:flex items-center gap-3'>
                     <button className='text-sm font-medium text-gray-300 hover:text-white transition max-sm:hidden'>
                         Sign in
                     </button>
                     <PrimaryButton onClick={()=>openSingUp()} className='max-sm:text-xs hidden sm:inline-block'>Get Started</PrimaryButton>
                 </div>
+                      ):(
+                        
+                        <div className=" flex gap-2">
+                            <GhostButton onClick={()=> navigate('/plans')} className='border-none text-gray-300 sm:py-1.5'>
+                                Credits:
+                            </GhostButton>
+                            <UserButton>
+                                <UserButton.MenuItems>
+                                    <UserButton.Action label='Generate'labelIcon= 
+                                    {<SparkleIcon size={14}/>} onClick={()=>navigate('/generate')}/>
+                                </UserButton.MenuItems>
+                            </UserButton>
+                        </div>
+                      )}
+               
+              
 
                 <button onClick={() => setIsOpen(!isOpen)} className='md:hidden'>
                     <MenuIcon className='size-6' />
