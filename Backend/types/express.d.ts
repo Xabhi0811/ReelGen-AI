@@ -1,3 +1,7 @@
+// express ke datatype define kar he hai 
+
+
+
 import {Request} from 'express';
 
 declare global{
