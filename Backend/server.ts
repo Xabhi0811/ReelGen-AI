@@ -8,6 +8,8 @@ import clerkWebhooks from './controller/clerk.js';
 import "./configs/instrument.mjs"
 import * as Sentry from "@sentry/node"
 import userRouter from './routes/userRoutes.js'
+import projectRouter from './routes/projectRoutes.js'
+
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -45,6 +47,7 @@ app.get("/debug-sentry", function mainHandler(req, res) {
 });
 
 app.use('/api/user',userRouter)
+app.use('/api/project', projectRouter)
 
 
 // The error handler must be registered before any other error middleware and after all controllers
