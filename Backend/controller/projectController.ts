@@ -5,6 +5,7 @@ import { prisma } from '../configs/prisma.js';
  import { GenerateContentConfig  , HarmBlockThreshold, HarmCategory} from '@google/genai';
  import fs from 'fs';
 import path from 'path';
+import ai from '../configs/ai.js';
 
 
 
@@ -110,7 +111,27 @@ import path from 'path';
 
              ]
          }
+                
+         //image base64 structure for ai model
 
+         const img1base64 = loadImage(images[0].path, images[0].mimeType);
+         const img2base64 = loadImage(images[1].path, images[1].mimeType);
+
+         const prompt ={
+            text: `Combine the person and product into a realistic photo.
+            Make the person naturally hold or use the product.
+            March lighting, shadows, scale and perspective.
+            Male the person stand in professional studio lighting.
+            Output ecommerce-quality photo realistic imagery.
+            ${userPrompt}`
+         }
+
+         //Generate the image using the ai model
+         const response: any = await ai.models.generateContent({
+            model,
+            contents: [img1base64, img2base64 , prompt],
+            config: GenerateContentConfig
+         })
 
     } catch (error:any) {
         Sentry.captureException(error);
