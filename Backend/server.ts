@@ -38,7 +38,7 @@ app.use(express.json())
 
 app.get('/',(req: Request, res: Response)=>{
     res.send('Server is Live!');
-    console.log("new change");
+   
 });
 
 
