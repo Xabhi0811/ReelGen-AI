@@ -6,6 +6,8 @@ import { prisma } from '../configs/prisma.js';
  import fs from 'fs';
 import path from 'path';
 import ai from '../configs/ai.js';
+import axios from 'axios';
+import { error } from 'console';
 
 
 
@@ -213,6 +215,66 @@ import ai from '../configs/ai.js';
 
 
     try {
+      const project = await prisma.project.findUnique({
+         where: {id: projectId, userId},
+         include: {user: true}
+      })
+
+      if(!project || project.isGenerating){
+         return res.status(404).json({message: 'Generation im progress'})
+      }
+      if(project.generatedVideo){
+         return res.status(404).json({message: 'Video already generated'})
+      }   
+
+      await prisma.project.update({
+         where: {id: projectId},
+         data: {isGenerating: true}
+      })
+
+      const prompt =`make the person showcase the product 
+      which is ${project.productName}
+      ${project.productDescription && `and Product
+       Description: ${project.productDescription}`}`
+
+       const model = 'veo-3.1-generate-preview'
+        
+       if(!project.generatedImage){
+         throw new Error('Generated image not found')
+       }
+
+       const image = await axios.get(project.generatedImage, {responseType: 'arraybuffer',})
+
+       const imageBytes: any = Buffer.from(image.data)
+
+       let operation: any = await ai.models.generateVideos({
+         model,
+         prompt,
+         image:{
+            imageBytes: imageBytes.toString('base64'),
+            mimeType: 'image/png',
+         },
+         config:{
+            aspectRatio: project?.aspectRatio || '9:16',
+            numberOfVideos: 1,
+            resolution: '720p',
+         }
+
+       })
+
+       while(!operation.done){
+         console.log('Waiting for video generation to complete...');
+         operation = await ai.operations.getVideosOperation({
+            operation: operation,
+         })
+       }
+
+       const filename = `${userId}-${Date.now()}.mp4`;
+       const filePath = path.join('videos',filename)
+
+       // Create the images direstory if it doesnot exist
+
+       
         
     } catch (error:any) {
         Sentry.captureException(error);
