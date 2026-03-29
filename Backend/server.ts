@@ -33,6 +33,13 @@ app.post('/api/clerk', express.raw({type: 'application/json'}), clerkWebhooks)
 app.use(clerkMiddleware())
 app.use(express.json())
 
+// Request logging middleware
+app.use((req, res, next) => {
+    console.log(`\nREQ ${req.method} ${req.path}`);
+    console.log('   Authorization:', req.headers.authorization ? 'Present' : 'Missing');
+  
+    next();
+});
 
 
 
@@ -56,4 +63,9 @@ Sentry.setupExpressErrorHandler(app);
 
 app.listen(PORT,()=>{
     console.log(`Server is running at http://localhost:${PORT}`)
+    console.log('Routes registered:')
+    console.log('  GET /api/user/publish/:projectId')
+    console.log('  GET /api/user/credits')
+    console.log('  GET /api/user/projects')
+    console.log('  GET /api/user/projects/:projectId')
 });

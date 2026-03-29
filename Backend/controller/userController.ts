@@ -6,7 +6,7 @@ import { prisma } from '../configs/prisma.js';
  export const getUserCredits = async (req: Request, res: Response)=>{
     try{
 
-        const {userId} = req.auth();
+        const userId = (req as any).userId || req.auth()?.userId;
         if(!userId) {return res.status(401).json({message: 'Unauthorized'})}
         const user = await prisma.user.findUnique({
             where: {id:userId}
@@ -25,7 +25,8 @@ import { prisma } from '../configs/prisma.js';
   export const getAllProjects = async (req: Request, res: Response)=>{
     try{
         
-          const {userId} = req.auth();
+          const userId = (req as any).userId || req.auth()?.userId;
+          if(!userId) {return res.status(401).json({message: 'Unauthorized'})}
           const projects = await prisma.project.findMany({
             where: {userId},
             orderBy: {createdAt: 'desc'}
@@ -41,9 +42,10 @@ import { prisma } from '../configs/prisma.js';
   export const getProjectsById = async (req: Request, res: Response)=>{
     try{
            
-        const {userId} = req.auth();
-        const {projectId} = req.params;
-          const project = await prisma.project.findUnique({
+        const userId = (req as any).userId || req.auth()?.userId;
+        if(!userId) {return res.status(401).json({message: 'Unauthorized'})}
+        const projectId = String(req.params.projectId || '');
+          const project = await prisma.project.findFirst({
            where:{id: projectId, userId}
           })
           if(!project){return res.status(404).json({message: 'Project not found'})}
@@ -62,21 +64,38 @@ import { prisma } from '../configs/prisma.js';
     try{
            
 
-        const {userId} = req.auth();
-        const {projectId} = req.params;
-          const project = await prisma.project.findUnique({
+        // Use userId from auth middleware
+        const userId = (req as any).userId || req.auth()?.userId;
+        const projectId = String(req.params.projectId || '');
+        
+        console.log('DEBUG toggleProjectPublic:', { projectId, userId });
+        
+        if(!userId){
+          return res.status(401).json({message: 'Unauthorized'});
+        }
+        
+        const project = await prisma.project.findFirst({
            where:{id: projectId, userId}
-          })
-          if(!project){return res.status(404).json({message: 'Project not found'})}
-          if(!project?.generatedImage && !project?.generatedVideo){
-            return res.status(404).json({message: 'image or video not generated'})
+        })
+        if(!project){
+          const existingProject = await prisma.project.findUnique({
+            where: { id: projectId },
+            select: { id: true, userId: true }
+          });
+
+          if(existingProject){
+            return res.status(403).json({message: `You are not allowed to publish this project (owner: ${existingProject.userId})`})
           }
 
-          await prisma.project.update({
+          return res.status(404).json({message: `Project not found: ${projectId}`})
+        }
+          
+          const updatedProject = await prisma.project.update({
             where: {id:projectId},
             data: {isPublished:!project.isPublished}
           })
-          res.json({isPublished: !project.isPublished})
+          console.log('DEBUG Project published:', projectId, updatedProject.isPublished);
+          res.json({isPublished: updatedProject.isPublished})
  
     } catch(error :any){
         Sentry.captureException(error);

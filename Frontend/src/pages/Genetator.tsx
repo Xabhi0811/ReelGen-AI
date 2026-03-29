@@ -3,10 +3,18 @@ import Title from "../components/Title"
 import UploadZone from "../components/uploadZone"
 import { Loader2Icon, RectangleHorizontalIcon, RectangleVerticalIcon, Wand2Icon } from "lucide-react"
 import { PrimaryButton } from "../components/Buttons"
+import { useAuth, useUser } from "@clerk/react"
+import { useNavigate } from "react-router-dom"
+import toast from "react-hot-toast"
+import api from "../configs/axios"
 
 
 
 const Genetator = () => {
+
+  const {user} = useUser()
+  const {getToken} = useAuth()
+  const navigate =useNavigate()
 
   const [name, setName] =useState('')
   const[productName, setProuctName] =useState('')
@@ -26,6 +34,36 @@ const Genetator = () => {
   }
     const handleGenerate = async (e: React.FormEvent<HTMLFormElement>)=>{
       e.preventDefault();
+      if(!user) return toast('Please login to generate')
+
+        if(!productImage || !modelImage ||!name|| !productName || !aspectRatio)
+          return toast('please fill all the required fields')
+
+        try {
+          setIsGenerating(true);
+          const fromData = new FormData();
+
+          fromData.append('name', name)
+          fromData.append('productName', productName)
+          fromData.append('productDescription',productDescripation)
+           fromData.append('userPrompt',userPrompt)
+            fromData.append('aspectRatio',aspectRatio)
+             fromData.append('images',productImage)
+             fromData.append('modelImage', modelImage)
+          
+          const token = await getToken()
+
+          const {data} = await api.post('/api/project/create', fromData,{
+            headers: {Authorization: `Bearer ${token}`}
+          })
+
+          toast.success(data.message)
+         navigate('/result/' + data.projectId)
+          
+        } catch (error: any) {
+          setIsGenerating(false);
+          toast.error(error?.response?.data?.message || error.message)
+        }
     }
 
   

@@ -1,27 +1,55 @@
 import { useNavigate } from "react-router-dom"
 import type { Project } from "../types"
 import { useState } from "react";
-import { EllipsisIcon, ImageIcon, Loader2Icon, PlaySquareIcon, Scroll, Share2Icon, Trash2Icon } from "lucide-react";
+import { EllipsisIcon, ImageIcon, Loader2Icon, PlaySquareIcon, Share2Icon, Trash2Icon } from "lucide-react";
 import { GhostButton, PrimaryButton } from "./Buttons";
+import { useAuth } from "@clerk/react";
+import api from "../configs/axios";
+import toast from "react-hot-toast";
 
 
 const ProjectCard = ({gen, setGenerations, forCommunity = false}: 
     {gen: Project, setGenerations: React.Dispatch<React.SetStateAction<Project[]>>,forCommunity?:boolean}) => {
-
+         
+      const {getToken} = useAuth()
         const navigate = useNavigate();
         const [menuOpen, setMenuOpen] = useState(false)
 
  const handleDelete = async (id: string)=>{
-  const confirm =window.confirm('Are you sure you want to delete this project?');
+  const confirm = window.confirm('Are you sure you want to delete this project?');
   if(!confirm) return;
-  console.log(id)
+  try {
+     const token = await getToken();
+     const {data} = await api.delete(`/api/project/${id}`,{
+      headers: {Authorization: `Bearer ${token}`}
+     })
+     setGenerations((generations)=>generations.filter((gen)=>gen.id !== id));
+     toast.success(data.message);
+  } catch (error: any) {
+    toast.error(error?.response?.data?.message || error.message);
+    console.log(error);
+  }
 
  }
 
- const togglePublish =async (projectId: string)=>{
-  console.log(projectId)
+ const togglePublish = async (projectId: string)=>{
+  try {
+    const token = await getToken();
+    const {data} = await api.get(`/api/user/publish/${projectId}`,{
+      headers: {Authorization: `Bearer ${token}`}
+    })
+     setGenerations((generations)=>generations.map((gen)=>gen.id ===
+    projectId ? {...gen, isPublished: data.isPublished}: gen));
+  toast.success(data.isPublished ? 'Project published': 'Project unpublished');
+  } catch (error: any) {
+     toast.error(error?.response?.data?.message || error.message);
+    console.log('togglePublish error', {
+      status: error?.response?.status,
+      message: error?.response?.data?.message,
+      projectId,
+    });
+  }
  }
-
 
   return (
     <div key={gen.id} className="mb-4 break-inside-avoid">
@@ -114,12 +142,16 @@ const ProjectCard = ({gen, setGenerations, forCommunity = false}:
 
         {/*source image */}
           <div className="absolute right-3 bottom-3">
-            <img src={gen.uploadedImages[0]} alt="product"
-            className="w-16 h-16 object-cover rounded-full animate-float" />
+            {gen.uploadedImages?.[0] ? (
+              <img src={gen.uploadedImages[0]} alt="product"
+              className="w-16 h-16 object-cover rounded-full animate-float" />
+            ) : null}
 
-            <img src={gen.uploadedImages[1]} alt="model"
-            className="w-16 h-16 object-cover rounded-full animate-float -ml-8"
-            style={{animationDelay: '3s'}} />
+            {gen.uploadedImages?.[1] ? (
+              <img src={gen.uploadedImages[1]} alt="model"
+              className="w-16 h-16 object-cover rounded-full animate-float -ml-8"
+              style={{animationDelay: '3s'}} />
+            ) : null}
           </div>
         </div>
          {/*details */}

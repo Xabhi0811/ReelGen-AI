@@ -12,10 +12,13 @@ import Result from './pages/Result';
 import Community from './pages/Community';
 import Genetator from './pages/Genetator';
 import Loading from './pages/Loading';
+import {Toaster} from 'react-hot-toast'
+
 
 function App() {
 	return (
 		<>
+		<Toaster toastOptions={{style: {background: '#333', color: '#fff'}}}/>
 			<SoftBackdrop />
 			<LenisScroll />
 			<Navbar />

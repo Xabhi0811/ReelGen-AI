@@ -9,6 +9,43 @@ import ai from '../configs/ai.js';
 import axios from 'axios';
 import { error } from 'console';
 
+const parseAiError = (error: any) => {
+   let status = 500;
+   let message = error?.message || 'Internal server error';
+   let retryAfterSeconds: number | null = null;
+
+   let payload = error?.error;
+   if (!payload && typeof error?.message === 'string' && error.message.trim().startsWith('{')) {
+      try {
+         const parsed = JSON.parse(error.message);
+         payload = parsed?.error;
+      } catch {
+         // Keep original error message when message is not JSON.
+      }
+   }
+
+   const code = payload?.code ?? error?.code;
+   const apiStatus = payload?.status ?? error?.status;
+
+   if (code === 429 || apiStatus === 'RESOURCE_EXHAUSTED') {
+      status = 429;
+      message = 'AI quota exceeded. Please retry in a few seconds or check Gemini billing/limits.';
+
+      const retryDetail = payload?.details?.find(
+         (detail: any) => detail?.['@type'] === 'type.googleapis.com/google.rpc.RetryInfo'
+      );
+      const retryDelay = retryDetail?.retryDelay;
+      if (typeof retryDelay === 'string' && retryDelay.endsWith('s')) {
+         const value = Number.parseFloat(retryDelay.replace('s', ''));
+         if (!Number.isNaN(value)) {
+            retryAfterSeconds = Math.ceil(value);
+         }
+      }
+   }
+
+   return { status, message, retryAfterSeconds };
+};
+
 
 
 
@@ -30,7 +67,12 @@ import { error } from 'console';
       productDescription, targetLength =5 } = req.body
       
 
-      const images: any = req.file;
+      const files = (req.files || {}) as Record<string, Express.Multer.File[]>;
+      const images = [
+         ...(files.images || []),
+         ...(files.productImage || []),
+         ...(files.modelImage || []),
+      ].slice(0, 2);
 
       if(images.length <2 || !productName){
          return res.status(400).json({message: 'Please upload at least 2 images'})
@@ -54,7 +96,7 @@ import { error } from 'console';
 
     try {
 
-         let uploadImages = await Promise.all(
+         const uploadedImages = await Promise.all(
             images.map(async(item: any)=>{
                let result = await cloudinary.uploader.upload(item.path,
                   {resource_type: 'image'})
@@ -66,6 +108,7 @@ import { error } from 'console';
             data:{
                name,
                userId,
+               productName,
                productDescription,
                userPrompt,
                aspectRatio,
@@ -116,8 +159,8 @@ import { error } from 'console';
                 
          //image base64 structure for ai model
 
-         const img1base64 = loadImage(images[0].path, images[0].mimeType);
-         const img2base64 = loadImage(images[1].path, images[1].mimeType);
+         const img1base64 = loadImage(images[0].path, images[0].mimetype);
+         const img2base64 = loadImage(images[1].path, images[1].mimetype);
 
          const prompt ={
             text: `Combine the person and product into a realistic photo.
@@ -166,6 +209,7 @@ import { error } from 'console';
 
             res.json({projectId: project.id})
     } catch (error:any) {
+      console.error('createProject error:', error);
         if(tempProjectId!){
          //update project status and error message
 
@@ -183,11 +227,15 @@ import { error } from 'console';
          })
 
         }
-
-
-
-        Sentry.captureException(error);
-       res.status(500).json({message: error.message})
+            const mappedError = parseAiError(error);
+            Sentry.captureException(error);
+            if (mappedError.retryAfterSeconds) {
+               return res.status(mappedError.status).json({
+                  message: mappedError.message,
+                  retryAfterSeconds: mappedError.retryAfterSeconds,
+               });
+            }
+            return res.status(mappedError.status).json({message: mappedError.message})
         
     }
  }
@@ -197,8 +245,12 @@ import { error } from 'console';
  export const createVideo = async (req:Request, res: Response) =>{
 
    const {userId} = req.auth()
-   const {projectId} = req.body;
+   const projectId = String(req.body?.projectId || '');
    let isCreditDeducted = false
+
+   if(!projectId){
+      return res.status(400).json({message: 'projectId is required'})
+   }
 
    const user = await prisma.user.findUnique({
       where: {id: userId}
@@ -215,7 +267,7 @@ import { error } from 'console';
 
 
     try {
-      const project = await prisma.project.findUnique({
+      const project = await prisma.project.findFirst({
          where: {id: projectId, userId},
          include: {user: true}
       })
@@ -269,19 +321,21 @@ import { error } from 'console';
          })
        }
 
+          const generatedVideo = operation?.response?.generatedVideos?.[0]?.video;
+
        const filename = `${userId}-${Date.now()}.mp4`;
        const filePath = path.join('videos',filename)
 
        // Create the images direstory if it doesnot exist
        fs.mkdirSync('videos', {recursive: true})
 
-       if(!operation.response.generatedVideo){
-         throw new Error(operation.response.raiMediaFilteredReasons[0])
+          if(!generatedVideo){
+             throw new Error(operation?.response?.raiMediaFilteredReasons?.[0] || 'Video generation failed')
        }
 
        //Download the video.
        await ai.files.download({
-         file: operation.response.generateVideos[0].video,
+             file: generatedVideo,
          downloadPath: filePath,
        })
 
@@ -304,7 +358,7 @@ import { error } from 'console';
        res.json({message: 'Video generation completed',videoUrl: uploadResult.secure_url})
 
         
-    } catch (error:any) {
+   } catch (error:any) {
 
 
 
@@ -312,8 +366,8 @@ import { error } from 'console';
          //update project status and error message
 
          await prisma.project.update({
-            where: {id: projectId, userId},
-            data: {isGenerating: false, error: error.message}
+            where: {id: projectId},
+            data: {isGenerating: false, error: error?.message || 'Video generation failed'}
          })
         
          
@@ -326,8 +380,15 @@ import { error } from 'console';
 
         }
 
-        Sentry.captureException(error);
-       res.status(500).json({message: error.message})
+            const mappedError = parseAiError(error);
+            Sentry.captureException(error);
+            if (mappedError.retryAfterSeconds) {
+               return res.status(mappedError.status).json({
+                  message: mappedError.message,
+                  retryAfterSeconds: mappedError.retryAfterSeconds,
+               });
+            }
+            return res.status(mappedError.status).json({message: mappedError.message})
         
     }
  }
@@ -338,7 +399,8 @@ import { error } from 'console';
          where: {isPublished: true}
       })
         res.json({projects})
-    } catch (error:any) {
+   } catch (error:any) {
+      console.error('getAllPublishedProjects error:', error);
         Sentry.captureException(error);
        res.status(500).json({message: error.message})
         
@@ -351,8 +413,8 @@ import { error } from 'console';
     try {
 
       const {userId} = req.auth();
-      const {projectId} = req.params;
-      const project = await prisma.project.findUnique({
+      const projectId = String(req.params.projectId || '');
+      const project = await prisma.project.findFirst({
          where: {id: projectId, userId}
       })
 

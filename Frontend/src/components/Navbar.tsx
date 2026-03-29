@@ -34,7 +34,7 @@ export default function Navbar() {
             const {data} = await api.get('/api/user/credits',{headers:
                 {Authorization: `Bearer ${token}`}})
                 setCredits(data.credits)
-        } catch (error) {
+        } catch (error:any) {
             toast.error(error?.response?.data.message || error.message)
             console.log(error)
             
