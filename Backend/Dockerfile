@@ -1,14 +1,16 @@
-FROM node:18
+FROM node:20
 
 WORKDIR /app
 
-COPY package*.json ./
+# Copy everything first
+COPY . .
 
+# Then install
 RUN npm install
 
-COPY . .
+# Generate Prisma client
+RUN npx prisma generate
 
 EXPOSE 5000
 
-# ✅ Run prisma at runtime (NOT build time)
-CMD sh -c "npx prisma generate && npm run server"
+CMD ["npm", "run", "server"]
