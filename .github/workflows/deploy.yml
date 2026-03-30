@@ -10,22 +10,29 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v3
 
+      # ✅ Better Docker login (official action)
       - name: Login to Docker Hub
-        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
+      # ✅ Build & Push Backend
       - name: Build & Push Backend
         run: |
-          docker build -t xabhi/ugc-backend ./backend
-          docker push xabhi/ugc-backend
+          docker build -t xabhi/ugc-backend:latest ./Backend
+          docker push xabhi/ugc-backend:latest
 
+      # ✅ Build & Push Frontend
       - name: Build & Push Frontend
         run: |
-          docker build -t xabhi/ugc-frontend ./frontend
-          docker push xabhi/ugc-frontend
+          docker build -t xabhi/ugc-frontend:latest ./Frontend
+          docker push xabhi/ugc-frontend:latest
 
+      # ✅ Deploy to EC2
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.0.0
         with:
@@ -33,11 +40,22 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            docker pull xabhi/ugc-backend
-            docker pull xabhi/ugc-frontend
+            docker pull xabhi/ugc-backend:latest
+            docker pull xabhi/ugc-frontend:latest
 
-            docker rm -f backend || true
-            docker rm -f frontend || true
+            docker stop backend || true
+            docker rm backend || true
 
-            docker run -d -p 5000:5000 --name backend --env-file .env xabhi/ugc-backend
-            docker run -d -p 5173:5173 --name frontend xabhi/ugc-frontend
+            docker stop frontend || true
+            docker rm frontend || true
+
+            docker run -d \
+              --name backend \
+              -p 5000:5000 \
+              --env-file .env \
+              xabhi/ugc-backend:latest
+
+            docker run -d \
+              --name frontend \
+              -p 5173:5173 \
+              xabhi/ugc-frontend:latest
