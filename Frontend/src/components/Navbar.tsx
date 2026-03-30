@@ -13,7 +13,7 @@ export default function Navbar() {
     
     const navigate = useNavigate()
     const {user} = useUser()
-    const {openSignIn, openSingUp} =useClerk()
+    const {openSignIn, openSignUp} =useClerk()
     const [isOpen, setIsOpen] = useState(false);
     const [Credits, setCredits] = useState(0);
 
@@ -75,7 +75,7 @@ export default function Navbar() {
                     <button className='text-sm font-medium text-gray-300 hover:text-white transition max-sm:hidden'>
                         Sign in
                     </button>
-                    <PrimaryButton onClick={()=>openSingUp()} className='max-sm:text-xs hidden sm:inline-block'>Get Started</PrimaryButton>
+                    <PrimaryButton onClick={()=>openSignUp()} className='max-sm:text-xs hidden sm:inline-block'>Get Started</PrimaryButton>
                 </div>
                       ):(
                         
@@ -122,7 +122,7 @@ export default function Navbar() {
                 <button onClick={() =>{ setIsOpen(false); openSignIn()}} className='font-medium text-gray-300 hover:text-white transition'>
                     Sign in
                 </button>
-                <PrimaryButton onClick={() => {setIsOpen(false); openSingUp()}}>Get Started</PrimaryButton>
+                <PrimaryButton onClick={() => {setIsOpen(false); openSignUp()}}>Get Started</PrimaryButton>
 
                 <button
                     onClick={() => setIsOpen(false)}

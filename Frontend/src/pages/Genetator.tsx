@@ -1,6 +1,6 @@
 import { useState } from "react"
 import Title from "../components/Title"
-import UploadZone from "../components/uploadZone"
+import UploadZone from "../components/UploadZone"
 import { Loader2Icon, RectangleHorizontalIcon, RectangleVerticalIcon, Wand2Icon } from "lucide-react"
 import { PrimaryButton } from "../components/Buttons"
 import { useAuth, useUser } from "@clerk/react"
