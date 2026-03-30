@@ -1,0 +1,43 @@
+name: Deploy Fullstack App
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Login to Docker Hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: Build & Push Backend
+        run: |
+          docker build -t xabhi/ugc-backend ./backend
+          docker push xabhi/ugc-backend
+
+      - name: Build & Push Frontend
+        run: |
+          docker build -t xabhi/ugc-frontend ./frontend
+          docker push xabhi/ugc-frontend
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            docker pull xabhi/ugc-backend
+            docker pull xabhi/ugc-frontend
+
+            docker rm -f backend || true
+            docker rm -f frontend || true
+
+            docker run -d -p 5000:5000 --name backend --env-file .env xabhi/ugc-backend
+            docker run -d -p 5173:5173 --name frontend xabhi/ugc-frontend
