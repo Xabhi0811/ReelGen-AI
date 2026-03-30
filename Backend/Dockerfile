@@ -2,13 +2,12 @@ FROM node:20
 
 WORKDIR /app
 
-# Copy everything first
 COPY . .
 
-# Then install
-RUN npm install
+# Skip prisma generate during install
+RUN npm install --ignore-scripts
 
-# Generate Prisma client
+# Now manually generate Prisma (without needing DATABASE_URL)
 RUN npx prisma generate
 
 EXPOSE 5000
