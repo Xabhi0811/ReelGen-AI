@@ -11,6 +11,6 @@ export default defineConfig({
   },
   engine: "classic",
   datasource: {
-    url: env("DATABASE_URL"),
+   url: process.env.DATABASE_URL || "postgresql://neondb_owner:npg_dN4me0gFkQzw@ep-square-smoke-a134l8i0-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require",
   },
 });
