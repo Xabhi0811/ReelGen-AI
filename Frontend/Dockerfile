@@ -1,12 +1,11 @@
+# Build stage
 FROM node:20 as build
 
 WORKDIR /app
 
+# 🔥 IMPORTANT (add this)
 ARG VITE_CLERK_PUBLISHABLE_KEY
-ARG VITE_BASEURL
-
 ENV VITE_CLERK_PUBLISHABLE_KEY=$VITE_CLERK_PUBLISHABLE_KEY
-ENV VITE_BASEURL=$VITE_BASEURL
 
 COPY package*.json ./
 RUN npm install
@@ -15,6 +14,7 @@ COPY . .
 
 RUN npm run build
 
+# Production stage
 FROM node:20
 
 WORKDIR /app

@@ -31,10 +31,9 @@ jobs:
         run: |
           docker build \
             --build-arg VITE_CLERK_PUBLISHABLE_KEY=${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }} \
-            --build-arg VITE_BASEURL=${{ secrets.VITE_BASEURL }} \
             -t xabhi/ugc-frontend:latest ./Frontend
           docker push xabhi/ugc-frontend:latest
-                        
+
       # ✅ Deploy to EC2
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.0.0
