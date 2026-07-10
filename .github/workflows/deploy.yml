@@ -1,70 +1,27 @@
-name: Deploy Fullstack App
+- name: Deploy to EC2
+  uses: appleboy/ssh-action@v1.0.0
+  with:
+    host: ${{ secrets.EC2_HOST }}
+    username: ubuntu
+    key: ${{ secrets.EC2_SSH_KEY }}
+    script: |
+      docker pull xabhi/ugc-backend:latest
+      docker pull xabhi/ugc-frontend:latest
 
-on:
-  push:
-    branches:
-      - main
+      docker rm -f backend || true
+      docker rm -f frontend || true
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
+      docker run -d \
+        --name backend \
+        --restart always \
+        -p 5000:5000 \
+        --env-file /home/ubuntu/backend.env \
+        xabhi/ugc-backend:latest
 
-    steps:
-      # ✅ Checkout code
-      - name: Checkout code
-        uses: actions/checkout@v3
+      docker run -d \
+        --name frontend \
+        --restart always \
+        -p 5173:5173 \
+        xabhi/ugc-frontend:latest
 
-      # ✅ Login to Docker Hub
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      # ✅ Build & Push Backend
-      - name: Build & Push Backend
-        run: |
-          docker build -t xabhi/ugc-backend:latest ./Backend
-          docker push xabhi/ugc-backend:latest
-
-      # 🔥 Build & Push Frontend (WITH ENV FIX)
-      - name: Build & Push Frontend
-        run: |
-          docker build \
-            --build-arg VITE_CLERK_PUBLISHABLE_KEY=${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }} \
-            --build-arg VITE_BASEURL=https://reelgen-ai.duckdns.org \
-            -t xabhi/ugc-frontend:latest ./Frontend
-
-          docker push xabhi/ugc-frontend:latest
-
-      # 🚀 Deploy to EC2
-      - name: Deploy to EC2
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            # Pull latest images
-            docker pull xabhi/ugc-backend:latest
-            docker pull xabhi/ugc-frontend:latest
-
-            # Stop & remove old containers
-            docker stop backend || true
-            docker rm backend || true
-
-            docker stop frontend || true
-            docker rm frontend || true
-
-            # Run backend
-            docker run -d \
-              --name backend \
-              -p 5000:5000 \
-              --env-file .env \
-              xabhi/ugc-backend:latest
-
-            # Run frontend
-            docker run -d \
-              --name frontend \
-              -p 5173:5173 \
-              xabhi/ugc-frontend:latest
+      docker image prune -af
